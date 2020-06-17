@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  Final Project CV 2019                                                  %
+%  Final Project CV 2020                                                  %
 %  Find the position of a person into the store given a classifier ...    %
 %                                                                         %
 %  Students:                                                              %
