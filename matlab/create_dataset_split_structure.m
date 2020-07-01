@@ -20,12 +20,13 @@ function data = create_dataset_split_structure(main_dir,Ntrain,Ntest,file_ext)
     %remove '..' and '.' directories
     category_dirs(~cellfun(@isempty, regexp({category_dirs.name}, '\.*')))=[];
     category_dirs(strcmp({category_dirs.name},'split.mat'))=[]; 
-    
+    fprintf("we1!")
     for c = 1:length(category_dirs)
         if isdir(fullfile(main_dir,category_dirs(c).name)) && ~strcmp(category_dirs(c).name,'.') ...
                 && ~strcmp(category_dirs(c).name,'..')
             imgdir = dir(fullfile(main_dir,category_dirs(c).name, ['*.' file_ext]));
             ids = randperm(length(imgdir));
+            fprintf("we!")
             data(c).n_images = length(imgdir);
             data(c).classname = category_dirs(c).name;
             data(c).files = {imgdir(:).name};
