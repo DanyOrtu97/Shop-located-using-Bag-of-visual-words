@@ -1,0 +1,79 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Final Project CV 2020                                                  %
+%  Find the position of a person into the store given a classifier ...    %
+%                                                                         %
+%  Students:                                                              %
+%  Daniele Ortu   <danieleortu8@gmail.com>                                %
+%  Andrea Atzori  <atzoriandrea@outlook.it>                               %
+%                                                                         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Clean command windows, workspace 
+clear;
+clc;
+
+% Close secondary windows 
+close all;
+
+% Inizializations
+basepath = '../dataset/';
+libsvmpath = [fullfile('lib','libsvm-3.11','matlab')];
+addpath(libsvmpath);
+limitDatasetSize = 10;
+
+% Do or not some operations
+importTrainingSetData = 1;
+importTestSetData = 0;
+createfolders = 1;
+copyimages = 1;
+
+% Image file extension
+file_ext='jpg';
+
+nameColumns = {'rgbFile', 'depthFile', 'x', 'y', 'u', 'v', 'class'};
+dataTxt = readtable(fullfile('dataset', 'train_set', 'train_set.txt'));
+dataTxt = dataTxt(:,1:7);
+
+if createfolders
+    for i = 1:16
+        %if ~exist(int2str(i), '/train_set/split_by_class_RGB/')
+            mkdir(strcat(basepath, 'train_set/'), int2str(i));
+        %end
+
+        %if ~exist(int2str(i), '/test_set/split_by_class_RGB/')
+            mkdir(strcat(basepath, ''), int2str(i));
+        %end
+    end
+end
+
+if copyimages
+    %Training set
+    [M, N] = size(trainSet);
+    for i = 1 : M
+        class = trainSet(i,7);
+        file_RGB = strcat(basepath, 'img/egocart', '/train_set/train_RGB/', trainSet(i,1));
+        dest = strcat(basepath, 'img/egocart', '/train_set/split_by_class_RGB/', num2str(cell2mat(class)));
+        copyfile(string(file_RGB), dest) 
+    end
+    
+    %Test set
+    [M, N] = size(testSet);
+    for i = 1 : M
+        class = testSet(i,7);
+        file_RGB = strcat(basepath, 'img/egocart', '/test_set/test_RGB/', testSet(i,1));
+        dest = strcat(basepath, 'img/egocart', '/test_set/split_by_class_RGB/', num2str(cell2mat(class)));
+        copyfile(string(file_RGB), dest) 
+    end
+end
+
+
+
+% Convert images of the training set into BoVW representation
+
+
+% Induction of the classifier
+
+
+% Knn to find the closest image to training set from test set (finding the position into the store) 
+
+
