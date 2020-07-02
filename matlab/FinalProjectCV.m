@@ -357,6 +357,7 @@ if do_L2_NN_classification
                       visualize_res & have_screen);
 end
 
+
 % Knn to find the closest image to training set from test set (finding the position into the store) 
 
 
