@@ -1,4 +1,4 @@
-function data = create_dataset_store(main_dir,isTraining,file_ext)
+function data = create_dataset_store(main_dir,isTraining,file_ext, percentage)
     category_dirs = dir(main_dir);
     category_dirs_train = dir(strcat(main_dir, '/train_set/split_by_class'));
     category_dirs_test = dir(strcat(main_dir, '/test_set/split_by_class'));
@@ -36,8 +36,13 @@ function data = create_dataset_store(main_dir,isTraining,file_ext)
 %             data(d).test_id(c+1:d) = true(1,data(d).n_images);
 %         end
 %     end
+if ~exist('percentage','var')
+    % third parameter does not exist, so default it to something
+    percentage = 100;
+end
       for c = 1:(length(category_dirs_train))
-          imgdirtrain = dir(fullfile(main_dir,'/train_set/split_by_class',category_dirs_train(c).name, ['*.' file_ext]));
+          
+          imgdirtrain = random_pick_percentage(main_dir,'/train_set/split_by_class',category_dirs_train(c).name, file_ext, percentage);
           imgdirtest = dir(fullfile(main_dir,'/test_set/split_by_class',category_dirs_test(c).name, ['*.' file_ext]));
           data(c).n_images = length(imgdirtrain)+length(imgdirtest);
           data(c).classname = category_dirs_train(c).name;
