@@ -41,7 +41,6 @@ if ~exist('percentage','var')
     percentage = 100;
 end
       for c = 1:(length(category_dirs_train))
-
           
           imgdirtrain = random_pick_percentage(main_dir,'/train_set/split_by_class',category_dirs_train(c).name, file_ext, percentage);
           imgdirtest = dir(fullfile(main_dir,'/test_set/split_by_class',category_dirs_test(c).name, ['*.' file_ext]));

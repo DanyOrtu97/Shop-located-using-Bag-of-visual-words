@@ -1,42 +1,65 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  Final Project CV 2020                                                  %
-%  Find the position of a person into the store given a classifier ...    %
-%                                                                         %
-%  Students:                                                              %
-%  Daniele Ortu   <danieleortu8@gmail.com>                                %
-%  Andrea Atzori  <atzoriandrea@outlook.it>                               %
-%                                                                         %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Clean command windows, workspace 
-clear;
-clc;
-
-% Close secondary windows 
-close all;
-
-% Inizializations
 cols = {'rgbFile','depthFile','x', 'y', 'u', 'v', 'class' };
-% path = '/media/andrea/Dati2/CV_Proj/handsonbow/dataset/train_set/train_set.txt';
-% base_path = '/media/andrea/Dati2/CV_Proj/handsonbow/dataset/train_set/';
-basepath = {''};
-path ='dataset/train_set/train_set.txt';
+path = '/dataset/train_set/train_set.txt';
+base_path = '/dataset/train_set/';
 data = readtable(path,'Delimiter', ' ', 'HeaderLines', 0, 'ReadVariableNames',true );
 data = data(:,1:7);
 
+testMatrix = table2cell(data);
+[M, N] = size(testMatrix);
+
+for i = 1:16
+    mkdir('/dataset/train_set/split_by_class', int2str(i))
+end
+
+for i = 1 : M
+    class = testMatrix(i,7);
+    file_RGB = strcat('/dataset/train_set/train_RGB/', testMatrix(i,1));
+    dest = strcat('/dataset/train_set/split_by_class/', num2str(cell2mat(class)));
+    copyfile(string(file_RGB), dest) 
+end
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ICPR 2014 Tutorial                                                     %
+%  Hands on Advanced Bag-of-Words Models for Visual Recognition           %
+%                                                                         %
+%  Instructors:                                                           %
+%  L. Ballan     <lamberto.ballan@unifi.it>                               %
+%  L. Seidenari  <lorenzo.seidenari@unifi.it>                             %
+%                                                                         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                         %
+%   BOW pipeline: Image classification using bag-of-features              %
+%                                                                         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                         %
+%   Part 1:  Load and quantize pre-computed image features                %
+%   Part 2:  Represent images by histograms of quantized features         %
+%   Part 3:  Classify images with nearest neighbor classifier             %
+%                                                                         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+clear;
+close all;
+
+% DATASET
+dataset_dir='';
+%dataset_dir = '15_ObjectCategories';
+
+% FEATURES extraction methods
+% 'sift' for sparse features detection (SIFT descriptors computed at  
+% Harris-Laplace keypoints) or 'dsift' for dense features detection (SIFT
+% descriptors computed at a grid of overlapped patches
+
+%desc_name = 'sift';
 desc_name = 'dsift';
+%desc_name = 'msdsift';
 
-libsvmpath = [fullfile('lib','libsvm-3.11','matlab')];
-addpath(libsvmpath);
-
-% Do or not some operations
-importTrainingSetData = 1;
-importTestSetData = 0;
-do_createfolders = 0;
-do_copyimages = 0;
-do_split_sets = 1;
-do_feat_extraction = 1;
-
+% FLAGS
 do_feat_extraction = 0;
 do_split_sets = 0;
 
@@ -45,11 +68,6 @@ do_feat_quantization = 1;
 
 do_L2_NN_classification = 1;
 do_chi2_NN_classification = 0;
-do_svm_linar_classification = 1;
-do_svm_llc_linar_classification = 0;
-do_svm_precomp_linear_classification = 0;
-do_svm_inter_classification = 0;
-do_svm_chi2_classification = 0;
 
 visualize_feat = 0;
 visualize_words = 0;
@@ -57,80 +75,48 @@ visualize_confmat = 0;
 visualize_res = 0;
 have_screen = ~isempty(getenv('DISPLAY'));
 
+% PATHS
+basepath = '/media/andrea/Dati2/CV_Proj/handsonbow/';
+wdir = '/media/andrea/Dati2/CV_Proj/handsonbow/';
+libsvmpath = [ wdir, fullfile('lib','libsvm-3.11','matlab')];
+addpath(libsvmpath)
+
 % BOW PARAMETERS
 max_km_iters = 50; % maximum number of iterations for k-means
 nfeat_codebook = 60000; % number of descriptors used by k-means for the codebook generation
 norm_bof_hist = 1;
 
 % number of codewords (i.e. K for the k-means algorithm)
-nwords_codebook = 400;
+nwords_codebook = 500;
 
-% Image file extension
+% image file extension
 file_ext='jpg';
 
-% nameColumns = {'rgbFile', 'depthFile', 'x', 'y', 'u', 'v', 'class'};
-
-%Train set
-dataTrain = readtable(fullfile('dataset', 'train_set', 'train_set.txt'));
-dataTrain = dataTrain(:,1:7);
-dataTrain = table2cell(dataTrain);
-
-%Test set
-dataTest = readtable(fullfile('dataset', 'test_set', 'test_set.txt'));
-dataTest = dataTest(:,1:7);
-dataTest = table2cell(dataTest);
-
-if do_createfolders
-    for i = 1:16
-        mkdir('/media/andrea/Dati2/CV_Proj/handsonbow/dataset/train_set/split_by_class', int2str(i));
-        mkdir('/media/andrea/Dati2/CV_Proj/handsonbow/dataset/test_set/split_by_class', int2str(i));
-    end
-end
-
-if do_copyimages
-    %Training set
-    [M, N] = size(dataTrain);
-    for i = 1 : M
-        class = testMatrix(i,7);
-        file_RGB = strcat('/media/andrea/Dati2/CV_Proj/handsonbow/dataset/train_set/train_RGB/', testMatrix(i,1));
-        dest = strcat('/media/andrea/Dati2/CV_Proj/handsonbow/dataset/train_set/split_by_class/', num2str(cell2mat(class)));
-        copyfile(string(file_RGB), dest)
-    end
-    
-    %Test set
-    [M, N] = size(dataTest);
-    for i = 1 : M
-        class = testMatrix(i,7);
-        file_RGB = strcat('/media/andrea/Dati2/CV_Proj/handsonbow/dataset/test_set/test_RGB/', testMatrix(i,1));
-        dest = strcat('/media/andrea/Dati2/CV_Proj/handsonbow/dataset/test_set/split_by_class/', num2str(cell2mat(class)));
-        copyfile(string(file_RGB), dest)
-    end
-end
-
-% Create a new dataset split for train
+% Create a new dataset split
 file_split = 'split.mat';
-dataset_dir = 'test_set';
 if do_split_sets    
-    %data = create_dataset_split_structure(fullfile('dataset/train_set/', dataset_dir),file_ext);
-    data = create_dataset_store('dataset', 1, file_ext);
-    save(fullfile('dataset',dataset_dir,file_split),'data');
+    %data = create_dataset_split_structure(fullfile(basepath, 'dataset/train_set/split_by_class', dataset_dir),50,0 ,file_ext);
+    data = create_dataset_store(fullfile(basepath, 'dataset'), 1, file_ext)
+    save(fullfile(basepath,'dataset',dataset_dir,file_split),'data');
 else
-    
+    load(fullfile(basepath,'dataset',dataset_dir,file_split));
 end
-
 classes = {data.classname}; % create cell array of class name strings
+gpudev= gpuDevice();
 
 % Extract SIFT features fon training and test images
-if do_feat_extraction  
-    extract_sift_features(fullfile('dataset/test_set'),desc_name)    
-    extract_sift_features(fullfile('dataset/train_set'),desc_name)    
+if do_feat_extraction   
+    extract_sift_features(fullfile(basepath, 'dataset/train_set/split_by_class'),desc_name)    
 end
 
 
-% Convert images of the training set into BoVW representation
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%% Part 1: quantize pre-computed image features %%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% Load pre-computed SIFT features for training images
+%% Load pre-computed SIFT features for training images
 
 % The resulting structure array 'desc' will contain one
 % entry per images with the following fields:
@@ -144,7 +130,7 @@ lasti=1;
 for i = 1:length(data)
      images_descs = get_descriptors_files(data,i,file_ext,desc_name,'train');
      for j = 1:length(images_descs) 
-        fname = fullfile('dataset',dataset_dir,data(i).classname,images_descs{j});
+        fname = fullfile(basepath,'dataset/train_set/split_by_class',dataset_dir,data(i).classname,images_descs{j});
         fprintf('Loading %s \n',fname);
         tmp = load(fname,'-mat');
         tmp.desc.class=i;
@@ -156,7 +142,7 @@ for i = 1:length(data)
 end
 
 
-% Visualize SIFT features for training images
+%% Visualize SIFT features for training images
 if (visualize_feat && have_screen)
     nti=10;
     fprintf('\nVisualize features for %d training images\n', nti);
@@ -174,13 +160,13 @@ if (visualize_feat && have_screen)
 end
 
 
-% Load pre-computed SIFT features for test images 
+%% Load pre-computed SIFT features for test images 
 
 lasti=1;
 for i = 1:length(data)
      images_descs = get_descriptors_files(data,i,file_ext,desc_name,'test');
      for j = 1:length(images_descs) 
-        fname = fullfile('dataset', dataset_dir, data(i).classname, images_descs{j});
+        fname = fullfile(basepath,'dataset/test_set/split_by_class',dataset_dir,data(i).classname,images_descs{j});
         fprintf('Loading %s \n',fname);
         tmp = load(fname,'-mat');
         tmp.desc.class=i;
@@ -192,7 +178,7 @@ for i = 1:length(data)
 end
 
 
-% Build visual vocabulary using k-means 
+%% Build visual vocabulary using k-means %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if do_form_codebook
     fprintf('\nBuild visual vocabulary:\n');
@@ -230,12 +216,30 @@ if do_form_codebook
 end
 
 
-% K-means descriptor quantization means assignment of each feature
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                         %
+%   EXERCISE 1: K-means Descriptor quantization                           %
+%                                                                         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% K-means descriptor quantization means assignment of each feature
 % descriptor with the identity of its nearest cluster mean, i.e.
 % visual word. Your task is to quantize SIFT descriptors in all
 % training and test images using the visual dictionary 'VC'
 % constructed above.
-
+%
+% TODO:
+% 1.1 compute Euclidean distances between VC and all descriptors
+%     in each training and test image. Hint: to compute all-to-all
+%     distance matrix for two sets of descriptors D1 & D2 use
+%     dmat=eucliddist(D1,D2);
+% 1.2 compute visual word ID for each feature by minimizing
+%     the distance between feature SIFT descriptors and VC.
+%     Hint: apply 'min' function to 'dmat' computed above along
+%     the dimension (1 or 2) corresponding to VC, i.g.:
+%     [mv,visword]=min(dmat,[],2); if you compute dmat as 
+%     dmat=eucliddist(dscr(i).sift,VC);
 
 if do_feat_quantization
     fprintf('\nFeature quantization (hard-assignment)...\n');
@@ -258,10 +262,12 @@ if do_feat_quantization
       desc_test(i).quantdist = mv;
     end
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   End of EXERCISE 1                                                     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
-% Visualize visual words (i.e. clusters)
+%% Visualize visual words (i.e. clusters) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  To visually verify feature quantization computed above, we can show 
 %  image patches corresponding to the same visual word. 
 
@@ -295,12 +301,24 @@ end
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%% Part 2: represent images with BOF histograms %%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                         %
+%   EXERCISE 2: Bag-of-Features image classification                      %
+%                                                                         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Represent each image by the normalized histogram of visual
+%% Represent each image by the normalized histogram of visual
 % word labels of its features. Compute word histogram H over 
 % the whole image, normalize histograms w.r.t. L1-norm.
+%
+% TODO:
+% 2.1 for each training and test image compute H. Hint: use
+%     Matlab function 'histc' to compute histograms.
 
 
 N = size(VC,1); % number of visual words
@@ -332,8 +350,12 @@ for i=1:length(desc_test)
 end
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   End of EXERCISE 2                                                     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%LLC Coding
+
+%%%%LLC Coding
 if do_svm_llc_linar_classification
     for i=1:length(desc_train)
         disp(desc_train(i).imgfname);
@@ -346,17 +368,22 @@ if do_svm_llc_linar_classification
         desc_test(i).llc=desc_test(i).llc/norm(desc_test(i).llc);
     end
 end
-%end LLC coding
+%%%%end LLC coding
 
 save(fullfile(basepath,'dataset','desc_test.mat'),'desc_test','-v7.3' );
 save(fullfile(basepath,'dataset','desc_train.mat'),'desc_train','-v7.3' );
 
+load(fullfile(basepath,'dataset','desc_test.mat'));
+load(fullfile(basepath,'dataset','desc_train.mat'));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%% Part 3: image classification %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 % Concatenate bof-histograms into training and test matrices 
 bof_train=cat(1,desc_train.bof);
 bof_test=cat(1,desc_test.bof);
-if do_svm_llc_linar_classification
+if do_svm_llc_linara_classification
     llc_train = cat(1,desc_train.llc);
     llc_test = cat(1,desc_test.llc);
 end
@@ -365,14 +392,13 @@ end
 labels_train=cat(1,desc_train.class);
 labels_test=cat(1,desc_test.class);
 
-% Induction of the classifier
 
-% NN classification 
-
+%% NN classification %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 tic
 if do_L2_NN_classification
     % Compute L2 distance between BOFs of test and training images
     bof_l2dist=eucliddist(bof_test,bof_train);
+    
     
     % Nearest neighbor classification (1-NN) using L2 distance
     [mv,mi] = min(bof_l2dist,[],2);
@@ -387,8 +413,10 @@ if do_L2_NN_classification
                       visualize_confmat & have_screen,... 
                       visualize_res & have_screen);
 end
-time = toc
+ 
+time = toc;
 
-% Knn to find the closest image to training set from test set (finding the position into the store) 
+
+
 
 
