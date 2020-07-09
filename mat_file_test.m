@@ -56,8 +56,8 @@ dataset_dir='';
 % descriptors computed at a grid of overlapped patches
 
 %desc_name = 'sift';
-desc_name = 'dsift';
-%desc_name = 'msdsift';
+%desc_name = 'dsift';
+desc_name = 'msdsift';
 
 % FLAGS
 do_feat_extraction = 0;
@@ -68,6 +68,7 @@ do_feat_quantization = 1;
 
 do_L2_NN_classification = 1;
 do_chi2_NN_classification = 0;
+do_svm_llc_linar_classification = 1;
 
 visualize_feat = 0;
 visualize_words = 0;
@@ -76,9 +77,9 @@ visualize_res = 0;
 have_screen = ~isempty(getenv('DISPLAY'));
 
 % PATHS
-basepath = '/media/andrea/Dati2/CV_Proj/handsonbow/';
-wdir = '/media/andrea/Dati2/CV_Proj/handsonbow/';
-libsvmpath = [ wdir, fullfile('lib','libsvm-3.11','matlab')];
+basepath = pwd;
+wdir = pwd;
+libsvmpath = [ wdir, fullfile('/lib','libsvm-3.11','matlab')];
 addpath(libsvmpath)
 
 % BOW PARAMETERS
@@ -96,17 +97,17 @@ file_ext='jpg';
 file_split = 'split.mat';
 if do_split_sets    
     %data = create_dataset_split_structure(fullfile(basepath, 'dataset/train_set/split_by_class', dataset_dir),50,0 ,file_ext);
-    data = create_dataset_store(fullfile(basepath, 'dataset'), 1, file_ext)
-    save(fullfile(basepath,'dataset',dataset_dir,file_split),'data');
+    data = create_dataset_store(fullfile(basepath, '/dataset'), 1, file_ext)
+    save(fullfile(basepath,'/dataset',dataset_dir,file_split),'data');
 else
-    load(fullfile(basepath,'dataset',dataset_dir,file_split));
+    load(fullfile(basepath,'/dataset',dataset_dir,file_split));
 end
 classes = {data.classname}; % create cell array of class name strings
 gpudev= gpuDevice();
 
 % Extract SIFT features fon training and test images
 if do_feat_extraction   
-    extract_sift_features(fullfile(basepath, 'dataset/train_set/split_by_class'),desc_name)    
+    extract_sift_features(fullfile(basepath, '/dataset/test_set/split_by_class'),desc_name);   
 end
 
 
@@ -130,7 +131,7 @@ lasti=1;
 for i = 1:length(data)
      images_descs = get_descriptors_files(data,i,file_ext,desc_name,'train');
      for j = 1:length(images_descs) 
-        fname = fullfile(basepath,'dataset/train_set/split_by_class',dataset_dir,data(i).classname,images_descs{j});
+        fname = fullfile(basepath,'/dataset/train_set/split_by_class',dataset_dir,data(i).classname,images_descs{j});
         fprintf('Loading %s \n',fname);
         tmp = load(fname,'-mat');
         tmp.desc.class=i;
@@ -143,21 +144,21 @@ end
 
 
 %% Visualize SIFT features for training images
-if (visualize_feat && have_screen)
-    nti=10;
-    fprintf('\nVisualize features for %d training images\n', nti);
-    imgind=randperm(length(desc_train));
-    for i=1:nti
-        d=desc_train(imgind(i));
-        clf, showimage(imread(strrep(d.imgfname,'_train','')));
-        x=d.c;
-        y=d.r;
-        rad=d.rad;
-        showcirclefeaturesrad([x,y,rad]);
-        title(sprintf('%d features in %s',length(d.c),d.imgfname));
-        pause
-    end
-end
+% if (visualize_feat && have_screen)
+%     nti=10;
+%     fprintf('\nVisualize features for %d training images\n', nti);
+%     imgind=randperm(length(desc_train));
+%     for i=1:nti
+%         d=desc_train(imgind(i));
+%         clf, showimage(imread(strrep(d.imgfname,'_train','')));
+%         x=d.c;
+%         y=d.r;
+%         rad=d.rad;
+%         showcirclefeaturesrad([x,y,rad]);
+%         title(sprintf('%d features in %s',length(d.c),d.imgfname));
+%         pause
+%     end
+% end
 
 
 %% Load pre-computed SIFT features for test images 
@@ -166,7 +167,7 @@ lasti=1;
 for i = 1:length(data)
      images_descs = get_descriptors_files(data,i,file_ext,desc_name,'test');
      for j = 1:length(images_descs) 
-        fname = fullfile(basepath,'dataset/test_set/split_by_class',dataset_dir,data(i).classname,images_descs{j});
+        fname = fullfile(basepath,'/dataset/test_set/split_by_class',dataset_dir,data(i).classname,images_descs{j});
         fprintf('Loading %s \n',fname);
         tmp = load(fname,'-mat');
         tmp.desc.class=i;
@@ -189,7 +190,7 @@ if do_form_codebook
     for i=1:length(data)
         desc_class = desc_train(labels_train==i);
         randimages = randperm(length(desc_class));
-        randimages=randimages(1: int16(data(i).n_images/100*15));
+        randimages=randimages(1: int16(data(i).n_images/100*5));
         DESC = vertcat(DESC,desc_class(randimages).sift);
     end
 
@@ -271,33 +272,33 @@ end
 %  To visually verify feature quantization computed above, we can show 
 %  image patches corresponding to the same visual word. 
 
-if (visualize_words && have_screen)
-    figure;
-    %num_words = size(VC,1) % loop over all visual word types
-    num_words = 10;
-    fprintf('\nVisualize visual words (%d examples)\n', num_words);
-    for i=1:num_words
-      patches={};
-      for j=1:length(desc_train) % loop over all images
-        d=desc_train(j);
-        ind=find(d.visword==i);
-        if length(ind)
-          %img=imread(strrep(d.imgfname,'_train',''));
-          img=rgb2gray(imread(d.imgfname));
-          
-          x=d.c(ind); y=d.r(ind); r=d.rad(ind);
-          bbox=[x-2*r y-2*r x+2*r y+2*r];
-          for k=1:length(ind) % collect patches of a visual word i in image j      
-            patches{end+1}=cropbbox(img,bbox(k,:));
-          end
-        end
-      end
-      % display all patches of the visual word i
-      clf, showimage(combimage(patches,[],1.5))
-      title(sprintf('%d examples of Visual Word #%d',length(patches),i))
-      pause
-    end
-end
+% if (visualize_words && have_screen)
+%     figure;
+%     %num_words = size(VC,1) % loop over all visual word types
+%     num_words = 10;
+%     fprintf('\nVisualize visual words (%d examples)\n', num_words);
+%     for i=1:num_words
+%       patches={};
+%       for j=1:length(desc_train) % loop over all images
+%         d=desc_train(j);
+%         ind=find(d.visword==i);
+%         if length(ind)
+%           %img=imread(strrep(d.imgfname,'_train',''));
+%           img=rgb2gray(imread(d.imgfname));
+%           
+%           x=d.c(ind); y=d.r(ind); r=d.rad(ind);
+%           bbox=[x-2*r y-2*r x+2*r y+2*r];
+%           for k=1:length(ind) % collect patches of a visual word i in image j      
+%             patches{end+1}=cropbbox(img,bbox(k,:));
+%           end
+%         end
+%       end
+%       % display all patches of the visual word i
+%       clf, showimage(combimage(patches,[],1.5))
+%       title(sprintf('%d examples of Visual Word #%d',length(patches),i))
+%       pause
+%     end
+% end
 
 
 
@@ -370,11 +371,11 @@ if do_svm_llc_linar_classification
 end
 %%%%end LLC coding
 
-save(fullfile(basepath,'dataset','desc_test.mat'),'desc_test','-v7.3' );
-save(fullfile(basepath,'dataset','desc_train.mat'),'desc_train','-v7.3' );
-
-load(fullfile(basepath,'dataset','desc_test.mat'));
-load(fullfile(basepath,'dataset','desc_train.mat'));
+% save(fullfile(basepath,'/dataset','desc_test.mat'),'desc_test','-v7.3' );
+% save(fullfile(basepath,'/dataset','desc_train.mat'),'desc_train','-v7.3' );
+% 
+% load(fullfile(basepath,'/dataset','desc_test.mat'));
+% load(fullfile(basepath,'/dataset','desc_train.mat'));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%% Part 3: image classification %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -383,7 +384,7 @@ load(fullfile(basepath,'dataset','desc_train.mat'));
 % Concatenate bof-histograms into training and test matrices 
 bof_train=cat(1,desc_train.bof);
 bof_test=cat(1,desc_test.bof);
-if do_svm_llc_linara_classification
+if do_svm_llc_linar_classification
     llc_train = cat(1,desc_train.llc);
     llc_test = cat(1,desc_test.llc);
 end
