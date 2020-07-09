@@ -64,6 +64,7 @@ for i1 = 1:2
         if perc == 70
             load(fullfile(basepath,'dataset',dataset_dir,file_split70));
         end
+        classes = {data.classname}; % create cell array of class name strings
         lasti=1;
         for i = 1:length(data)
             images_descs = get_descriptors_files(data,i,file_ext,desc_name,'train');
@@ -217,13 +218,13 @@ for i1 = 1:2
         fprintf('\n*** %s ***\nAccuracy = %1.4f%% (classification)\n',method_name,acc*100);
         
         % Compute classification accuracy
-        compute_accuracy(data,labels_test,bof_l2lab,classes,method_name,desc_test,...
+        overall_accuracy = compute_accuracy(data,labels_test,bof_l2lab,classes,method_name,desc_test,...
             visualize_confmat & have_screen,...
             visualize_res & have_screen);
         
         time = toc;
-
-        test_text = strcat( "\ndsift-> nwords: ", string(nwords_codebook), "   train_percentage: ", string(perc), "   time: ", string(time));
+        
+        test_text = strcat( "\ndsift-> nwords: ", string(nwords_codebook), "   train_percentage: ", string(perc), "   time: ", string(time), "  accuracy: ", string(overall_accuracy));
         fprintf(fileID, test_text);
         clearvars desc_test desc_class desc_train
     end

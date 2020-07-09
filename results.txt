@@ -1,0 +1,3 @@
+
+dsift-> nwords: 100   train_percentage: 30   time: 0.44258  accuracy: 0.89586
+dsift-> nwords: 200   train_percentage: 30   time: 0.45107  accuracy: 0.91037
