@@ -281,7 +281,8 @@ time = toc;
 
 %Find the position into the store 
 imgTest = "";
-DetectPosition(imgTest, bof_l2dist);
+label_testImage = compute_label_test_image(imgTest);
+DetectPosition(label_testImage, bof_l2dist);
 
 
 
