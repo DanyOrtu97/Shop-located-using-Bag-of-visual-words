@@ -280,9 +280,8 @@ time = toc;
 
 
 %Find the position into the store 
-input_image = '/media/andrea/Dati2/CV_Proj/handsonbow/dataset/validation/img/1L027280.jpg';
-folder = '/media/andrea/Dati2/CV_Proj/handsonbow/dataset/validation/';
-DetectPosition(input_image, desc_name,nwords_codebook, desc_train);
+imgTest = "";
+DetectPosition(imgTest, bof_l2dist, );
 
 
 

@@ -55,8 +55,8 @@ dataset_dir='';
 % Harris-Laplace keypoints) or 'dsift' for dense features detection (SIFT
 % descriptors computed at a grid of overlapped patches
 
-%desc_name = 'sift';
-desc_name = 'dsift';
+desc_name = 'sift';
+%desc_name = 'dsift';
 %desc_name = 'msdsift';
 
 % FLAGS
@@ -87,7 +87,7 @@ nfeat_codebook = 60000; % number of descriptors used by k-means for the codebook
 norm_bof_hist = 1;
 
 % number of codewords (i.e. K for the k-means algorithm)
-nwords_codebook = 10;
+nwords_codebook = 500;
 
 % image file extension
 file_ext='jpg';
@@ -216,8 +216,10 @@ if do_form_codebook
     [VC] = kmeans_bo(double(DESC),K,max_km_iters);%visual codebook
     VC = VC';%transpose for compatibility with following functions
     clear DESC;
+    
 end
 
+save(fullfile(basepath,'dataset','VC.mat'),'VC','-v7.3' );
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -373,8 +375,8 @@ if do_svm_llc_linar_classification
 end
 %%%%end LLC coding
 
-save(fullfile(basepath,'dataset','desc_test_sift_400.mat'),'desc_test','-v7.3' );
-save(fullfile(basepath,'dataset','desc_train_sift_400_.mat'),'desc_train','-v7.3' );
+save(fullfile(basepath,'dataset','desc_test.mat'),'desc_test','-v7.3' );
+save(fullfile(basepath,'dataset','desc_train.mat'),'desc_train','-v7.3' );
 
 load(fullfile(basepath,'dataset','desc_test.mat'));
 load(fullfile(basepath,'dataset','desc_train.mat'));
