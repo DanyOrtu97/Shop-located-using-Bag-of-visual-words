@@ -1,0 +1,13 @@
+
+dsift-> nwords: 10   train_percentage: 30   time: 0.39927  accuracy: 0.62921
+dsift-> nwords: 100   train_percentage: 30   time: 0.43619  accuracy: 0.92007
+dsift-> nwords: 200   train_percentage: 30   time: 0.50993  accuracy: 0.92522
+dsift-> nwords: 300   train_percentage: 30   time: 0.56392  accuracy: 0.92926
+dsift-> nwords: 400   train_percentage: 30   time: 0.59334  accuracy: 0.93246
+dsift-> nwords: 500   train_percentage: 30   time: 0.93176  accuracy: 0.92961
+dsift-> nwords: 10   train_percentage: 70   time: 0.67542  accuracy: 0.6574
+dsift-> nwords: 100   train_percentage: 70   time: 0.75608  accuracy: 0.92742
+dsift-> nwords: 200   train_percentage: 70   time: 1.1372  accuracy: 0.93226
+dsift-> nwords: 300   train_percentage: 70   time: 1.1504  accuracy: 0.93275
+dsift-> nwords: 400   train_percentage: 70   time: 1.4047  accuracy: 0.93248
+dsift-> nwords: 500   train_percentage: 70   time: 1.5508  accuracy: 0.93778

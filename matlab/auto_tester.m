@@ -8,8 +8,8 @@ dataset_dir='';
 % descriptors computed at a grid of overlapped patches
 
 %desc_name = 'sift';
-desc_name = 'dsift';
-%desc_name = 'msdsift';
+%desc_name = 'dsift';
+desc_name = 'msdsift';
 
 % FLAGS
 do_feat_extraction = 0;
@@ -53,17 +53,20 @@ test_time = 5.3;
 file_split = 'split.mat';
 file_split30 = 'split30.mat';
 file_split70 = 'split70.mat';
-percentages = [30 70];
-nwords = [100 200 300 400 500];
-for i1 = 1:2
+percentages = [30 70 100];
+nwords = [10 100 200 300 400 500];
+for i1 = 1:3
     perc = percentages(i1);
-    for j1 = 1:5
+    for j1 = 1:6
         nwords_codebook = nwords(j1);
         if perc == 30
             load(fullfile(basepath,'dataset',dataset_dir,file_split30));
         end
         if perc == 70
             load(fullfile(basepath,'dataset',dataset_dir,file_split70));
+        end
+        if perc == 100
+            load(fullfile(basepath,'dataset',dataset_dir,file_split));
         end
         classes = {data.classname}; % create cell array of class name strings
         lasti=1;
