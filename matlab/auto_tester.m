@@ -1,60 +1,44 @@
-% DATASET
-dataset_dir='';
-%dataset_dir = '15_ObjectCategories';
+% This code help us to automatically compute the accuracy and execution time from different inputs 
 
-% FEATURES extraction methods
-% 'sift' for sparse features detection (SIFT descriptors computed at  
-% Harris-Laplace keypoints) or 'dsift' for dense features detection (SIFT
-% descriptors computed at a grid of overlapped patches
+dataset_dir='';
 
 %desc_name = 'sift';
-desc_name = 'dsift';
-%desc_name = 'msdsift';
+%desc_name = 'dsift';
+desc_name = 'msdsift';
 
 % FLAGS
-do_feat_extraction = 0;
-do_split_sets = 0;
-
-do_form_codebook = 1;
-do_feat_quantization = 1;
-
-do_L2_NN_classification = 1;
-do_chi2_NN_classification = 0;
-
-visualize_feat = 0;
-visualize_words = 0;
 visualize_confmat = 0;
 visualize_res = 0;
 have_screen = ~isempty(getenv('DISPLAY'));
 
 % PATHS
-basepath = '/media/andrea/Dati2/CV_Proj/handsonbow/';
-wdir = '/media/andrea/Dati2/CV_Proj/handsonbow/';
-libsvmpath = [ wdir, fullfile('lib','libsvm-3.11','matlab')];
+basepath = pwd;
+wdir = pwd;
+libsvmpath = [ wdir, fullfile('/lib','libsvm-3.11','matlab')];
 addpath(libsvmpath)
-fileID = fopen('/media/andrea/Dati2/CV_Proj/handsonbow/results.txt','w');
+fileID = fopen('C:\Users\Daniele\Desktop\Daniele\1. Università\2. Magistrale\1° ANNO 2° SEMESTRE\Computer Vision\Progetto\CV_FinalProject-master/results.txt','w');
+
 % BOW PARAMETERS
 max_km_iters = 50; % maximum number of iterations for k-means
 nfeat_codebook = 60000; % number of descriptors used by k-means for the codebook generation
 norm_bof_hist = 1;
 
-% number of codewords (i.e. K for the k-means algorithm)
-
 % image file extension
 file_ext='jpg';
 
-
+% Inizializations/Test for the printf
 test_perc = 30;
 test_nw = 100;
 test_time = 5.3;
-
 
 % Create a new dataset split
 file_split = 'split.mat';
 file_split30 = 'split30.mat';
 file_split70 = 'split70.mat';
-percentages = [30 70];
-nwords = [100 200 300 400 500];
+
+percentages = [30 70 100];
+nwords = [10 100 200 300 400 500];
+
 for i1 = 1:2
     perc = percentages(i1);
     for j1 = 1:5
@@ -64,6 +48,9 @@ for i1 = 1:2
         end
         if perc == 70
             load(fullfile(basepath,'dataset',dataset_dir,file_split70));
+        end
+        if perc == 100
+            load(fullfile(basepath,'dataset',dataset_dir,file_split));
         end
         classes = {data.classname}; % create cell array of class name strings
         lasti=1;
@@ -225,8 +212,11 @@ for i1 = 1:2
         
         time = toc;
         
+        % Print the results on text file
         test_text = strcat( "\ndsift-> nwords: ", string(nwords_codebook), "   train_percentage: ", string(perc), "   time: ", string(time), "  accuracy: ", string(overall_accuracy));
         fprintf(fileID, test_text);
+        
+        % Clear the bigger vars in order to avoid ram saturation
         clearvars desc_test desc_class desc_train
     end
 end
