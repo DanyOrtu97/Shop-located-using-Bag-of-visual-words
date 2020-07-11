@@ -104,6 +104,8 @@ if do_split_sets
 else
     load(fullfile(basepath,'dataset',dataset_dir,file_split30));
 end
+
+
 classes = {data.classname}; % create cell array of class name strings
 gpudev= gpuDevice();
 
@@ -379,7 +381,7 @@ save(fullfile(basepath,'dataset','desc_test.mat'),'desc_test','-v7.3' );
 save(fullfile(basepath,'dataset','desc_train.mat'),'desc_train','-v7.3' );
 
 load(fullfile(basepath,'dataset','desc_test.mat'));
-load(fullfile(basepath,'dataset','desc_train.mat'));
+load(fullfile(basepath,'dataset','desc_train_sift_500.mat'));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%% Part 3: image classification %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

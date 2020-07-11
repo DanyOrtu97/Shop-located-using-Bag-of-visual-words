@@ -42,10 +42,20 @@ function class = DetectPosition(input_image, folder, desc_name,nwords_codebook, 
     llc_test = cat(1,desc_test.llc);
     
     labels_train=cat(1,desc_train.class);
-    labels_test=cat(1,desc_test.class);
-
-    bof_l2dist=eucliddist(bof_test,bof_train);
+    %labels_train = string(labels_train);
+    %labels_train = sort(labels_train);
+    bof_l2dist=eucliddist(desc_test.sift,desc_train(1).sift);
     
+    min = 999999999;
+    minid = 99999999;
+    for i = 1:13360
+        temporary =eucliddist(desc_test.sift,desc_train(i).sift);
+        if sum(temporary(:)) < min
+            min = sum(temporary(:));
+            minid = i;
+        end
+        disp(i)
+    end
     
     % Nearest neighbor classification (1-NN) using L2 distance
     [mv,mi] = min(bof_l2dist,[],2);

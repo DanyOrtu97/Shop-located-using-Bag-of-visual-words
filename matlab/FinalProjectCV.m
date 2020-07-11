@@ -82,7 +82,7 @@ if do_split_sets
     data = create_dataset_store(fullfile(basepath, 'dataset'), 1, file_ext,70)
     save(fullfile(basepath,'dataset',dataset_dir,file_split70),'data');
 else
-    load(fullfile(basepath,'dataset',dataset_dir,file_split30));
+    load(fullfile(basepath,'dataset',file_split));
 end
 classes = {data.classname}; % create cell array of class name strings
 
@@ -90,6 +90,13 @@ classes = {data.classname}; % create cell array of class name strings
 if do_feat_extraction   
     extract_sift_features(fullfile(basepath, 'dataset/train_set/split_by_class'),desc_name)    
 end
+
+
+
+%test dataset validation
+data = create_dataset_detect(fullfile(basepath, 'dataset'), file_ext,100)
+
+
 
 % Load pre-computed SIFT features for training images
 % The resulting structure array 'desc' will contain one
@@ -280,7 +287,7 @@ time = toc;
 
 
 %Find the position into the store 
-input_image = '/media/andrea/Dati2/CV_Proj/handsonbow/dataset/validation/img/1L027280.jpg';
+input_image = '/media/andrea/Dati2/CV_Proj/handsonbow/dataset/validation/img/3L024980.jpg';
 folder = '/media/andrea/Dati2/CV_Proj/handsonbow/dataset/validation/';
 DetectPosition(input_image, desc_name,nwords_codebook, desc_train);
 

@@ -16,7 +16,7 @@ basepath = pwd;
 wdir = pwd;
 libsvmpath = [ wdir, fullfile('/lib','libsvm-3.11','matlab')];
 addpath(libsvmpath)
-fileID = fopen('C:\Users\Daniele\Desktop\Daniele\1. Università\2. Magistrale\1° ANNO 2° SEMESTRE\Computer Vision\Progetto\CV_FinalProject-master/results.txt','w');
+fileID = fopen('/media/andrea/Dati2/CV_Proj/handsonbow/results.txt','w');
 
 % BOW PARAMETERS
 max_km_iters = 50; % maximum number of iterations for k-means
@@ -36,11 +36,11 @@ file_split = 'split.mat';
 file_split30 = 'split30.mat';
 file_split70 = 'split70.mat';
 
-percentages = [30 70 100];
-nwords = [10 100 200 300 400 500];
-for i1 = 1:3
+percentages = [100];
+nwords = [100 200 300];
+for i1 = 1:1
     perc = percentages(i1);
-    for j1 = 1:6
+    for j1 = 1:3
         nwords_codebook = nwords(j1);
         if perc == 30
             load(fullfile(basepath,'dataset',dataset_dir,file_split30));
